@@ -11,17 +11,9 @@
       <option value="Chemnitz">Chemnitz</option>
       <option :value=everywhere >keinen Auswahl</option>
     </select>
-    <input type="button" v-on:click="GetResult" value="suchen">
+    <input type="button" v-on:click="getResult" value="suchen">
   </form>
   <div id="itemList">
-    <b-pagination
-        v-model="this.getParam.page"
-        :total-rows="this.jobs.length"
-        :per-page="this.getParam.per"
-        aria-controls="itemList"
-        align="center"
-    ></b-pagination>
-  <div v-if="town==everywhere">
     <div v-for="(job,index) in jobs" :key="index" >
       <ul >
         <li>
@@ -30,18 +22,15 @@
       </ul>
     </div>
   </div>
-    <div v-else>
-      <div v-for="(job,index) in jobs" :key="index" >
-        <ul v-if="town==job.location ">
-          <li>
-            {{job.title}}
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
+  <b-pagination
+      v-model="currentPage"
+      :total-rows="responseLength"
+      :per-page="per"
+      @input="getPage(currentPage)"
+      aria-controls="itemList"
 
-
+  ></b-pagination>
+  CurrentPage:{{currentPage}}
 </div>
 
 </template>
@@ -56,24 +45,53 @@ export default {
   data() {
     return {
       jobUrl: "http://localhost:8080/api/v2/jobs/search.json?q=",
-      getParam :{
-        per: 50,
-        page:1,
-      },
-      jobs: [],
+      currentPage:1,
+      per:50,
+      responseLength:1,
+      jobs: [
+      ],
+      currentUserInput:null,
       town:null,
-      everywhere:"allTowns"
+      everywhere:"allTowns",
+      apiResponse:null,
+      loading:false,
     }
   },
-  methods: {
-    GetResult() {
-      axios.get(this.jobUrl +this.$refs.user_input.value,{params:this.getParam})
-          .then(response => {
-            (this.jobs = response.data.jobs)}).catch((error) => {
-              console.log(error)
-      });
-    }
 
+
+  methods: {
+    getResult() {
+      this.currentUserInput=this.$refs.user_input.value;
+      if(this.town==this.everywhere) {
+        axios.get(this.jobUrl + this.currentUserInput, {params: {page: this.currentPage}})
+            .then(response => {
+                  this.apiResponse = response.data;
+                  this.responseLength = this.apiResponse.length;
+                  this.jobs = this.apiResponse.jobs;
+
+                }
+            ).catch((err) => {
+          console.log(err)
+        })
+      }
+      else {
+        axios.get(this.jobUrl + this.currentUserInput, {params: {page: this.currentPage, o: this.town}})
+            .then(response => {
+                  this.apiResponse = response.data;
+                  this.responseLength = this.apiResponse.length;
+                  this.jobs = this.apiResponse.jobs;
+
+                }
+            ).catch((err) => {
+          console.log(err)
+        })
+      }
+    },
+    getPage:function (newPage){
+      this.currentPage=newPage;
+      this.getResult();
+
+    }
   }
 }
 </script>
