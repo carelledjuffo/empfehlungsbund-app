@@ -30,7 +30,6 @@
       aria-controls="itemList"
 
   ></b-pagination>
-  CurrentPage:{{currentPage}}
 </div>
 
 </template>
