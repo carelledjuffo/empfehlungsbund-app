@@ -128,11 +128,15 @@ form {
   padding: 30px 40px;
   border-radius: 8px;
   display: flex;
+  margin-bottom: 20px;
 }
 select{
   border: none;
   border-radius: 8px;
 }
+#itemList{
+  display:contents;
+  }
 input[type="text"] {
   font-size: 18px;
   line-height: 1;
